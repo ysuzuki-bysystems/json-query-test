@@ -5,6 +5,7 @@ import {
   startTransition,
   useActionState,
   useCallback,
+  useId,
   useState,
 } from "react";
 import type { Sqlite3Static } from "@sqlite.org/sqlite-wasm";
@@ -69,7 +70,7 @@ export default function Home() {
     { "col1": 2, "col2": "bar" },
   ]));
   const [result, setResult] = useState("");
-  const [state, dispatch] = useActionState(action, void 0);
+  const [state, dispatch, pendig] = useActionState(action, void 0);
 
   const handleClicked = useCallback<FormEventHandler>(
     (event) =>
@@ -86,28 +87,49 @@ export default function Home() {
             setResult((prev) => prev + "\n" + JSON.stringify(row)),
         });
       }),
-    [sql, data],
+    [sql, data, dispatch],
   );
 
   ((..._: unknown[]) => _)(state); // drop
 
+  const sqlid = useId();
+  const jsonid = useId();
+
   return (
     <>
-      <form onSubmit={handleClicked}>
-        <label>
-          SQL{" "}
-          <textarea value={sql} onChange={(evt) => setSql(evt.target.value)} />
-        </label>
-        <label>
-          JSON{" "}
-          <textarea
-            value={data}
-            onChange={(evt) => setData(evt.target.value)}
-          />
-        </label>
-        <button>Evaluate</button>
+      <form className="flex flex-col w-full" onSubmit={handleClicked}>
+        <div className="grid grid-cols-2">
+          <div className="flex flex-col p-2">
+            <label htmlFor={sqlid}>SQL</label>
+            <textarea
+              id={sqlid}
+              rows={5}
+              value={sql}
+              onChange={(evt) => setSql(evt.target.value)}
+              className="font-mono p-1 rounded-md outline outline-1 outline-gray-300 focus:outline focus:outline-2 focus:outline-blue-600"
+            />
+          </div>
+          <div className="flex flex-col p-2">
+            <label htmlFor={jsonid}>JSON</label>
+            <textarea
+              id={jsonid}
+              rows={5}
+              value={data}
+              onChange={(evt) => setData(evt.target.value)}
+              className="font-mono p-1 rounded-md outline outline-1 outline-gray-300 focus:outline focus:outline-2 focus:outline-blue-600"
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-end">
+          <button
+            className="m-2 px-3 py-1 rounded-md bg-blue-600 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:invisible"
+            disabled={pendig}
+          >
+            Evaluate
+          </button>
+        </div>
       </form>
-      <output>
+      <output className="flex flex-col w-full m-4">
         <pre>{result}</pre>
       </output>
     </>

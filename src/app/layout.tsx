@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./global.css";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -12,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className="w-screen h-screen overflow-clip">
         {children}
       </body>
     </html>

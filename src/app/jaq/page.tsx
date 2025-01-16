@@ -5,6 +5,7 @@ import {
   startTransition,
   useActionState,
   useCallback,
+  useId,
   useState,
 } from "react";
 import { preload } from "react-dom";
@@ -249,7 +250,7 @@ export default function Page(): React.ReactNode {
   const [data, setData] = useState('{"a":[1,2,3]}');
   const [stdout, setStdout] = useState("");
   const [stderr, setStderr] = useState("");
-  const [state, dispatch] = useActionState(action, {});
+  const [state, dispatch, pendig] = useActionState(action, {});
 
   const handleClicked = useCallback<FormEventHandler>(
     (event) =>
@@ -269,28 +270,60 @@ export default function Page(): React.ReactNode {
     [filter, data, dispatch],
   );
 
+  const filterid = useId();
+  const jsonid = useId();
+
   return (
     <>
-      <form onSubmit={handleClicked}>
-        <label>
-          FILTER{" "}
-          <textarea
-            value={filter}
-            onChange={(evt) => setFilter(evt.target.value)}
-          />
-        </label>
-        <label>
-          JSON{" "}
-          <textarea
-            value={data}
-            onChange={(evt) => setData(evt.target.value)}
-          />
-        </label>
-        <button>Evaluate</button>
+      <form className="flex flex-col w-full" onSubmit={handleClicked}>
+        <div className="grid grid-cols-2">
+          <div className="flex flex-col p-2">
+            <label
+              htmlFor={filterid}
+              className="block text-sm/6 font-medium text-gray-900"
+            >
+              FILTER
+            </label>
+            <textarea
+              id={filterid}
+              rows={5}
+              value={filter}
+              onChange={(evt) => setFilter(evt.target.value)}
+              className="font-mono p-1 rounded-md outline outline-1 outline-gray-300 focus:outline focus:outline-2 focus:outline-blue-600"
+            />
+          </div>
+          <div className="flex flex-col p-2">
+            <label
+              htmlFor={jsonid}
+              className="block text-sm/6 font-medium text-gray-900"
+            >
+              JSON
+            </label>
+            <textarea
+              id={jsonid}
+              rows={5}
+              value={data}
+              onChange={(evt) => setData(evt.target.value)}
+              className="font-mono p-1 rounded-md outline outline-1 outline-gray-300 focus:outline focus:outline-2 focus:outline-blue-600"
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-end">
+          <button
+            className="m-2 px-3 py-1 rounded-md bg-blue-600 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:invisible"
+            disabled={pendig}
+          >
+            Evaluate
+          </button>
+        </div>
       </form>
-      {state.code && <pre>EXIT: {state.code}</pre>}
-      <pre>{stdout}</pre>
-      <pre>{stderr}</pre>
+      <output className="flex flex-col w-full m-4">
+        <pre className="font-mono">{stdout}</pre>
+        {state.code && (
+          <pre className="font-mono text-red-500">EXIT: {state.code}</pre>
+        )}
+        <pre className="font-mono text-red-500 font-semibold">{stderr}</pre>
+      </output>
     </>
   );
 }
