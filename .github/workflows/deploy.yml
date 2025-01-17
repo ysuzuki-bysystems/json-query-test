@@ -28,11 +28,11 @@ jobs:
           target: wasm32-wasip1
       - uses: actions/configure-pages@v5
       - run: npm ci
-        env:
-          BASEPATH: /json-query-test
       - run: "npm run fetch:duckdb_extension"
       - run: "npm run build:jaq"
       - run: npm run build
+        env:
+          BASEPATH: /json-query-test
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./out

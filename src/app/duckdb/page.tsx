@@ -49,7 +49,7 @@ const LazyLinkPreloads = dynamic(async () => {
       <>
         {mainModule && <link rel="prefetch" href={mainModule} />}
         {mainWorker && <link rel="prefetch" href={mainWorker} />}
-        <link rel="prefetch" href="/duckdb/v1.1.1/wasm_eh/json.duckdb_extension.wasm" />
+        <link rel="prefetch" href="../duckdb/v1.1.1/wasm_eh/json.duckdb_extension.wasm" />
       </>
     );
   }
@@ -108,8 +108,10 @@ async function action(
 
   const c = await db.connect();
   try {
+    const loc = new URL("../duckdb", window.location.href);
     // https://duckdb.org/docs/api/wasm/extensions.html#fetching-duckdb-wasm-extensions
-    await c.query("SET custom_extension_repository = '/duckdb'");
+    // 相対パスの解決は WebWorker のコンテキストになる
+    await c.query(`SET custom_extension_repository = '${loc}'`); // FIXME sanitize
     const result = await c.query(input.sql);
     for (const row of result) {
       input.onresult(row);
