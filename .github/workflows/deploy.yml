@@ -25,6 +25,8 @@ jobs:
           node-version: "20"
           cache: npm
       - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: wasm32-wasip1
       - uses: actions/configure-pages@v5
       - run: npm ci
       - run: "npm run fetch:duckdb_extension"
