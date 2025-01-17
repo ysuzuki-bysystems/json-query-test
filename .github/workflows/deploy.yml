@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - actions # TODO remove me
 
 permissions:
   contents: read
