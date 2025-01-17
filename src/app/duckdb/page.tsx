@@ -96,11 +96,13 @@ type ActionInput = {
   onresult: (row: unknown) => void;
 };
 
+let db: duckdb.AsyncDuckDB | undefined;
+
 async function action(
   _state: ActionState,
   input: ActionInput,
 ): Promise<ActionState> {
-  const db = await newDb();
+  db ??= await newDb();
 
   await db.registerFileText("data.json", input.data);
 
