@@ -28,7 +28,7 @@ jobs:
       - uses: actions/configure-pages@v5
       - run: npm ci
       - run: "npm run fetch:duckdb_extension"
-      - run: "build:jaq"
+      - run: "npm run build:jaq"
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
