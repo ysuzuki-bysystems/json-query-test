@@ -97,6 +97,8 @@ export default function Home() {
 
   return (
     <>
+      <link rel="prefetch" href={new URL("@sqlite.org/sqlite-wasm/sqlite3.wasm", import.meta.url).href} />
+
       <form className="flex flex-col w-full" onSubmit={handleClicked}>
         <div className="grid grid-cols-2">
           <div className="flex flex-col p-2">

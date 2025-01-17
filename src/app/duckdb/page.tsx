@@ -9,11 +9,11 @@ import {
   useState,
 } from "react";
 
-import * as duckdb from "@duckdb/duckdb-wasm";
-import { preload } from "react-dom";
+import type * as duckdb from "@duckdb/duckdb-wasm";
+import dynamic from "next/dynamic";
 
-async function newDb(signal?: AbortSignal): Promise<duckdb.AsyncDuckDB> {
-  const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
+function bundles(): duckdb.DuckDBBundles {
+  return {
     mvp: {
       // mainModule: new URL("@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm", import.meta.url).href,
       // mainWorker: new URL('@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js', import.meta.url).href,
@@ -31,9 +31,43 @@ async function newDb(signal?: AbortSignal): Promise<duckdb.AsyncDuckDB> {
       ).href,
     },
   };
+}
+
+const LazyLinkPreloads = dynamic(async () => {
+  // https://github.com/vercel/next.js/issues/75021
+  // serverExternalPackages に指定されているパッケージ内のJSファイルのパスを new URL(..., import.meta.url) で
+  // 解決したいが、ファイルが評価されてしまい、パス解決に失敗してしまう。
+  // クライアント上では動くようなので、遅延してリンクを差し込む
+
+  function LazyLinkPreloads() {
+    const {
+      mainModule,
+      mainWorker,
+    } = bundles().eh ?? {};
+
+    return (
+      <>
+        {mainModule && <link rel="prefetch" href={mainModule} />}
+        {mainWorker && <link rel="prefetch" href={mainWorker} />}
+        <link rel="prefetch" href="/duckdb/v1.1.1/wasm_eh/json.duckdb_extension.wasm" />
+      </>
+    );
+  }
+
+  return {
+    default: LazyLinkPreloads,
+  };
+}, { ssr: false });
+
+async function newDb(signal?: AbortSignal): Promise<duckdb.AsyncDuckDB> {
+  const {
+    selectBundle,
+    ConsoleLogger,
+    AsyncDuckDB,
+  } = await import("@duckdb/duckdb-wasm");
 
   // Select a bundle based on browser checks
-  const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
+  const bundle = await selectBundle(bundles());
   signal?.throwIfAborted();
 
   if (bundle.mainWorker === null) {
@@ -42,8 +76,8 @@ async function newDb(signal?: AbortSignal): Promise<duckdb.AsyncDuckDB> {
 
   // Instantiate the asynchronus version of DuckDB-Wasm
   const worker = new Worker(bundle.mainWorker);
-  const logger = new duckdb.ConsoleLogger();
-  const db = new duckdb.AsyncDuckDB(logger, worker);
+  const logger = new ConsoleLogger();
+  const db = new AsyncDuckDB(logger, worker);
   await db.instantiate(bundle.mainModule);
   /*
 Cross-Origin-Embedder-Policy: require-corp
@@ -94,11 +128,6 @@ function bigIntAwareReplacer(_key: string, val: unknown) {
 }
 
 export default function Page(): React.ReactNode {
-  preload(
-    new URL("@duckdb/duckdb-wasm/dist/duckdb-eh.wasm", import.meta.url).href,
-    { as: "fetch", crossOrigin: "anonymous" },
-  );
-
   const [sql, setSql] = useState("from data.json");
   const [data, setData] = useState(JSON.stringify([
     { "col1": 1, "col2": "foo" },
@@ -133,6 +162,7 @@ export default function Page(): React.ReactNode {
 
   return (
     <>
+      <LazyLinkPreloads />
       <form className="flex flex-col w-full" onSubmit={handleClicked}>
         <div className="grid grid-cols-2">
           <div className="flex flex-col p-2">

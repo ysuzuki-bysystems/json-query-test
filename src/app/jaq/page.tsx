@@ -8,7 +8,6 @@ import {
   useId,
   useState,
 } from "react";
-import { preload } from "react-dom";
 
 const JAQ_WASM_HREF = new URL("./bin/jaq.wasm", import.meta.url).href;
 
@@ -244,8 +243,6 @@ function delegatewrite(fn: (text: string) => void): Write {
 }
 
 export default function Page(): React.ReactNode {
-  preload(JAQ_WASM_HREF, { as: "fetch", crossOrigin: "anonymous" });
-
   const [filter, setFilter] = useState(".a[]");
   const [data, setData] = useState('{"a":[1,2,3]}');
   const [stdout, setStdout] = useState("");
@@ -275,6 +272,8 @@ export default function Page(): React.ReactNode {
 
   return (
     <>
+      <link rel="prefetch" href={JAQ_WASM_HREF} />
+
       <form className="flex flex-col w-full" onSubmit={handleClicked}>
         <div className="grid grid-cols-2">
           <div className="flex flex-col p-2">
