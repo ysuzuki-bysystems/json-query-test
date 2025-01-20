@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "fetch:duckdb_extension": "mkdir -p public/duckdb/v1.1.1/wasm_eh/ && curl https://extensions.duckdb.org/v1.1.1/wasm_eh/json.duckdb_extension.wasm -o public/duckdb/v1.1.1/wasm_eh/json.duckdb_extension.wasm",
-    "build:jaq": "cargo install --target=wasm32-wasip1 --root src/app/jaq --no-default-features --config build.rustflags=[\\\"-Clink-args=--import-memory\\\"] jaq@2.0.0"
+    "build:jaq": "CARGO_BUILD_RUSTFLAGS=-Clink-args=--import-memory cargo install --target=wasm32-wasip1 --root src/app/jaq --no-default-features --no-track jaq@2.0.0"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.29.0",
