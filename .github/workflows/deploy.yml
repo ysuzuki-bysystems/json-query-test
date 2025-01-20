@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - fix/jaq-wasm
 
 permissions:
   contents: read
@@ -29,7 +30,7 @@ jobs:
       - uses: actions/configure-pages@v5
       - run: npm ci
       - run: "npm run fetch:duckdb_extension"
-      - run: "npm run build:jaq"
+      - run: "npm run build:jaq -- --verbose"
       - run: npm run build
         env:
           BASEPATH: /json-query-test
